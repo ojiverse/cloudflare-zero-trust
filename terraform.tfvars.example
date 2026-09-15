@@ -1,0 +1,8 @@
+cloudflare_account_id   = "0123456789abcdef0123456789abcdef"
+cloudflare_team_name    = "ojiverse"
+discord_oidc_issuer_url = "https://discord.id.ojiver.se"
+discord_oidc_client_id  = "cloudflare-access"
+
+# Keep this false until the discord-oidc client registration is deployed and
+# the client secret is available as discord_oidc_client_secret.
+enable_cloudflare_idp = false
