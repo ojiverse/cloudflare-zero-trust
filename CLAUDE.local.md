@@ -64,3 +64,43 @@
   is not a distributed lock — local apply can still race).
 - CF token scope note: current scope covers org + IdPs only; Access
   Apps/Policies later need `Access: Apps and Policies` added then.
+
+### 2026-09-16 follow-up — bootstrap execution (partial)
+
+- 1Password Environments live in the **ojilab** 1Password account
+  (`K32DFZMBJBEYTIFUXYEQHDYALQ`), operable via the `1password-mcp`
+  MCP server (stdio; added to `.devin/mcp_config.local.json`,
+  gitignored). `op` CLI also works with `--account ojilab.1password.com`
+  but manages vaults, not Environments.
+- Existing Environments: `discord-oidc-prod` (ojiverse's deploy env —
+  had CLOUDFLARE_API_TOKEN/DISCORD_CLIENT_SECRET/OIDC_SIGNING_PRIVATE_KEY),
+  `cloudflare-zero-trust-prod` (**ojilab's**, has google_oauth vars — do
+  not reuse).
+- Created `ojiverse-cloudflare-zero-trust-prod` (env ID
+  `vb3ejj5vwcvchp4fa62laizjyi`) and set `TF_VAR_discord_oidc_client_secret`.
+- Appended `OIDC_CLIENT_SECRETS_JSON={"cloudflare-access":...}` to
+  `discord-oidc-prod`. The secret is now in place **before** PR #10
+  merges, satisfying the fail-closed ordering requirement. NOTE: the
+  generated secret value appears in this session's transcript — rotate
+  it if transcript hygiene is a concern.
+- GitHub: set repo variables CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_TEAM_NAME,
+  DISCORD_OIDC_ISSUER_URL, DISCORD_OIDC_CLIENT_ID,
+  ENABLE_CLOUDFLARE_IDP=false, CD_ENABLED=false; created `production`
+  environment. `OP_INTEGRATION_KEY` org secret already has
+  `visibility: all`.
+- README updated to the new env name.
+
+### Still needed from user (cannot be automated here)
+
+- Cloudflare dashboard: enable R2, create bucket `ojiverse-terraform-state`,
+  create bucket-scoped R2 API token; create CF API token (Access:
+  Organizations, Identity Providers, and Groups Write on OJIverse).
+- 1Password: add `CLOUDFLARE_API_TOKEN`, `AWS_ACCESS_KEY_ID`,
+  `AWS_SECRET_ACCESS_KEY` to `ojiverse-cloudflare-zero-trust-prod`;
+  link its GitHub Actions destination to this repo's `terraform.yml`
+  on `main` → yields `OP_WORKLOAD_ID`/`OP_ENVIRONMENT_ID` (non-secret —
+  share them and they can be set as repo vars).
+- Approval gates: PR #10 merge (prod deploy), `CD_ENABLED=true` +
+  workflow dispatch (creates real ZT org), then
+  `ENABLE_CLOUDFLARE_IDP=true` + re-dispatch.
+- Dashboard IdP Test with a Discord guild member account.

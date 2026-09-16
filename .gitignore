@@ -6,3 +6,4 @@ tfplan
 terraform.tfvars
 backend.hcl
 .env
+.devin/mcp_config.local.json

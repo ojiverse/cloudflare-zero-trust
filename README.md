@@ -179,7 +179,9 @@ in flight.
 
 GitHub Actions holds no long-lived Cloudflare or Discord credentials.
 `1password/load-secrets-action` exchanges a GitHub OIDC token for the
-variables in the 1Password Environment `cloudflare-zero-trust-prod`:
+variables in the 1Password Environment `ojiverse-cloudflare-zero-trust-prod`
+(named to disambiguate from the ojilab account's same-named Environment,
+which belongs to a different Cloudflare account):
 
 ```text
 CLOUDFLARE_API_TOKEN
@@ -248,7 +250,7 @@ organization and requires no setup.
    in both places:
    - `discord-oidc-prod` Environment → `OIDC_CLIENT_SECRETS_JSON` as
      `{"cloudflare-access": "<secret>"}`
-   - `cloudflare-zero-trust-prod` Environment →
+   - `ojiverse-cloudflare-zero-trust-prod` Environment →
      `TF_VAR_discord_oidc_client_secret`
 5. Deploy discord-oidc with the `cloudflare-access` confidential client
    registered (see ojiverse/discord-oidc PR #10; the secret must be in
