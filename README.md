@@ -230,7 +230,7 @@ once before Terraform can own the resource) or **intentionally manual**
 | Create R2 API token (bucket-scoped Object R/W) | bootstrap-only |
 | Create Cloudflare API token (Access IdP/Orgs/Groups Write) | intentionally manual |
 | 1Password Environment + GitHub Actions destination | intentionally manual |
-| `OP_INTEGRATION_KEY` GitHub org secret, `OP_*` repo variables | bootstrap-only |
+| `OP_INTEGRATION_KEY` GitHub org secret, `OP_*` environment variables | bootstrap-only |
 | discord-oidc client registration (`OIDC_CLIENTS_JSON` + secret) | intentionally manual — Terraform owning it would create a circular dependency (the IdP needs the client, the client secret must exist outside this root) |
 | GitHub `production` environment, `CD_ENABLED` flag | bootstrap-only |
 | Dashboard IdP **Test** after apply | bootstrap-only verification |
@@ -262,7 +262,10 @@ organization and requires no setup.
    registered (see ojiverse/discord-oidc PR #10; the secret must be in
    place before that deploy or the Worker's config validation fails
    closed).
-6. GitHub repository variables:
+6. Create the GitHub `production` environment (optionally with required
+   reviewers). Variables consumed by the `apply` job live at the
+   **environment level** (matching the discord-oidc convention), so they
+   are only exposed to jobs running in `production`:
 
    ```text
    CLOUDFLARE_ACCOUNT_ID
@@ -274,12 +277,15 @@ organization and requires no setup.
    OP_ENVIRONMENT_ID
    ```
 
-   Repository secret: `OP_INTEGRATION_KEY`.
-   Repository variable: `CD_ENABLED` (`false` until the above is set).
+   Organization secret: `OP_INTEGRATION_KEY` (already org-wide).
+   Repository variable: `CD_ENABLED` (`false` until the above is set) —
+   kept repository-level because it is evaluated in the job-level `if`
+   guard.
 
-7. Create the GitHub `production` environment (optionally with required
-   reviewers) and link the 1Password Environment destination to this
-   repository's `terraform.yml` on `main`.
+   Then link the 1Password Environment's GitHub Actions destination to
+   this repository's `Terraform` workflow on `main` (the destination
+   form asks for the workflow *name*, not the file name); when it offers
+   a GitHub environment, use `production`.
 8. Set `CD_ENABLED` to `true`. The first apply creates the Zero Trust
    organization with auth domain `ojiverse.cloudflareaccess.com`.
 9. Set `ENABLE_CLOUDFLARE_IDP` to `true` and re-run. The discord-oidc
