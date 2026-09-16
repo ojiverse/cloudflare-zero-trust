@@ -92,9 +92,11 @@
 
 ### Still needed from user (cannot be automated here)
 
-- Cloudflare dashboard: enable R2, create bucket `ojiverse-terraform-state`,
-  create bucket-scoped R2 API token; create CF API token (Access:
-  Organizations, Identity Providers, and Groups Write on OJIverse).
+- Cloudflare dashboard: R2 bucket `ojiverse-tfstate-cloudflare-zero-trust`
+  was created by the user (decision: per-project bucket — R2 tokens are
+  bucket-scoped, no prefix permissions, and state holds plaintext secrets);
+  create bucket-scoped R2 API token + CF API token (Access: Organizations,
+  Identity Providers, and Groups Write on OJIverse).
 - 1Password: add `CLOUDFLARE_API_TOKEN`, `AWS_ACCESS_KEY_ID`,
   `AWS_SECRET_ACCESS_KEY` to `ojiverse-cloudflare-zero-trust-prod`;
   link its GitHub Actions destination to this repo's `terraform.yml`
