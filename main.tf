@@ -7,9 +7,12 @@ resource "cloudflare_zero_trust_organization" "ojiverse" {
   name        = "OJIverse"
   auth_domain = local.cloudflare_auth_domain
 
-  # With a single identity provider, skip the provider selection page once the
-  # Discord provider is enabled.
-  auto_redirect_to_identity = var.enable_cloudflare_idp
+  # The organization has two identity providers: the built-in Cloudflare IdP
+  # (administrative / break-glass path, intentionally not managed here) and
+  # the Discord-backed discord-oidc provider (normal member authentication).
+  # Org-level IdP routing stays neutral; per-application allowed IdPs and
+  # auto-redirect are Access Application decisions.
+  auto_redirect_to_identity = false
 }
 
 resource "cloudflare_zero_trust_access_identity_provider" "discord" {
@@ -30,8 +33,10 @@ resource "cloudflare_zero_trust_access_identity_provider" "discord" {
     # discord-oidc only grants the openid scope; requesting anything else
     # fails closed on the provider side.
     scopes = ["openid"]
-    # discord-oidc issues no email claim; the stable Discord user ID (sub)
-    # serves as the Access identity identifier.
+    # Interoperability mapping, not an email address: discord-oidc issues no
+    # email claim, so Access reads the stable Discord user ID (sub) into its
+    # "email" identity field. See README — never build email-domain policies
+    # on this IdP.
     email_claim_name = "sub"
   }
 

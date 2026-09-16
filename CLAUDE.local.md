@@ -40,3 +40,27 @@
   wiring, then `CD_ENABLED=true`, then `ENABLE_CLOUDFLARE_IDP=true`.
 - Dashboard: Test the Discord IdP; if `invalid_client` at token exchange,
   Cloudflare is likely using client_secret_post — re-register as public.
+
+### 2026-09-16 follow-up — review: multi-IdP posture
+
+- Review finding: org must not encode a single-IdP assumption. The
+  built-in **Cloudflare IdP is the admin / break-glass path** and stays
+  intentionally unmanaged (nothing here can delete/disable it);
+  `discord-oidc` is the normal member IdP. They coexist.
+- Changed `auto_redirect_to_identity` from `var.enable_cloudflare_idp`
+  to explicit `false` — org-level IdP routing stays neutral; allowed
+  IdPs / auto-redirect are per-Access-Application decisions. New test
+  asserts the `false` invariant.
+- Verified against provider schema + current Cloudflare docs:
+  `config.client_secret` is `sensitive=true` (redacted in plan output);
+  `email_claim_name` is the documented mechanism for IdPs lacking an
+  `email` claim — no alternative stable-identifier mechanism exists for
+  generic OIDC, so `email_claim_name = "sub"` stays and is now documented
+  as an interoperability mapping (never email semantics).
+- README rewritten: two-IdP architecture, per-app IdP routing model,
+  perimeter-vs-application identity boundary, account-level Terraform
+  ownership, bootstrap vs intentionally-manual classification, and a
+  precise R2 no-locking warning (CI concurrency serializes applies but
+  is not a distributed lock — local apply can still race).
+- CF token scope note: current scope covers org + IdPs only; Access
+  Apps/Policies later need `Access: Apps and Policies` added then.

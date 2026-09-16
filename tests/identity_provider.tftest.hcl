@@ -16,6 +16,11 @@ run "bootstrap_creates_org_without_idp" {
   }
 
   assert {
+    condition     = cloudflare_zero_trust_organization.ojiverse.auto_redirect_to_identity == false
+    error_message = "Org-level auto-redirect must stay neutral; the built-in Cloudflare IdP coexists with discord-oidc."
+  }
+
+  assert {
     condition     = length(cloudflare_zero_trust_access_identity_provider.discord) == 0
     error_message = "The IdP must remain disabled during bootstrap."
   }
