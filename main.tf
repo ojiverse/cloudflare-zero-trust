@@ -16,7 +16,7 @@ resource "cloudflare_zero_trust_organization" "ojiverse" {
 }
 
 resource "cloudflare_zero_trust_access_identity_provider" "discord" {
-  count = var.enable_cloudflare_idp ? 1 : 0
+  count = var.enable_discord_oidc_idp ? 1 : 0
 
   account_id = var.cloudflare_account_id
   name       = "Discord"
@@ -43,7 +43,7 @@ resource "cloudflare_zero_trust_access_identity_provider" "discord" {
   lifecycle {
     precondition {
       condition     = try(length(trimspace(var.discord_oidc_client_id)) > 0 && length(trimspace(var.discord_oidc_client_secret)) > 0, false)
-      error_message = "Set both discord_oidc_client_id and discord_oidc_client_secret before enable_cloudflare_idp is true."
+      error_message = "Set both discord_oidc_client_id and discord_oidc_client_secret before enable_discord_oidc_idp is true."
     }
   }
 }

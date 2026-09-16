@@ -30,7 +30,7 @@ run "enabled_idp_rejects_missing_credentials" {
   command = plan
 
   variables {
-    enable_cloudflare_idp = true
+    enable_discord_oidc_idp = true
   }
 
   expect_failures = [
@@ -42,7 +42,7 @@ run "enabled_idp_targets_discord_oidc" {
   command = plan
 
   variables {
-    enable_cloudflare_idp      = true
+    enable_discord_oidc_idp    = true
     discord_oidc_client_secret = "test-only-secret"
   }
 

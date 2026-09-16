@@ -14,7 +14,7 @@
 - `main.tf`: `cloudflare_zero_trust_organization` (team `ojiverse`,
   `auto_redirect_to_identity` tied to the IdP flag) +
   `cloudflare_zero_trust_access_identity_provider` `type = "oidc"` →
-  `https://discord.id.ojiver.se`, gated by `enable_cloudflare_idp`.
+  `https://discord.id.ojiver.se`, gated by `enable_discord_oidc_idp`.
 - discord-oidc constraints baked in: `pkce_enabled = true` (S256
   mandatory), `scopes = ["openid"]` only, `email_claim_name = "sub"` (no
   email claim exists upstream).
@@ -37,7 +37,7 @@
   `cloudflare-zero-trust-prod`. Order matters: secret in discord-oidc-prod
   before the client-registration PR merges, or the Worker fails closed.
 - GitHub vars/secrets + `production` environment + 1Password destination
-  wiring, then `CD_ENABLED=true`, then `ENABLE_CLOUDFLARE_IDP=true`.
+  wiring, then `CD_ENABLED=true`, then `ENABLE_DISCORD_OIDC_IDP=true`.
 - Dashboard: Test the Discord IdP; if `invalid_client` at token exchange,
   Cloudflare is likely using client_secret_post — re-register as public.
 
@@ -47,7 +47,7 @@
   built-in **Cloudflare IdP is the admin / break-glass path** and stays
   intentionally unmanaged (nothing here can delete/disable it);
   `discord-oidc` is the normal member IdP. They coexist.
-- Changed `auto_redirect_to_identity` from `var.enable_cloudflare_idp`
+- Changed `auto_redirect_to_identity` from `var.enable_discord_oidc_idp`
   to explicit `false` — org-level IdP routing stays neutral; allowed
   IdPs / auto-redirect are per-Access-Application decisions. New test
   asserts the `false` invariant.
@@ -85,7 +85,7 @@
   it if transcript hygiene is a concern.
 - GitHub: set repo variables CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_TEAM_NAME,
   DISCORD_OIDC_ISSUER_URL, DISCORD_OIDC_CLIENT_ID,
-  ENABLE_CLOUDFLARE_IDP=false, CD_ENABLED=false; created `production`
+  ENABLE_DISCORD_OIDC_IDP=false, CD_ENABLED=false; created `production`
   environment. `OP_INTEGRATION_KEY` org secret already has
   `visibility: all`.
 - README updated to the new env name.
@@ -104,5 +104,5 @@
   share them and they can be set as repo vars).
 - Approval gates: PR #10 merge (prod deploy), `CD_ENABLED=true` +
   workflow dispatch (creates real ZT org), then
-  `ENABLE_CLOUDFLARE_IDP=true` + re-dispatch.
+  `ENABLE_DISCORD_OIDC_IDP=true` + re-dispatch.
 - Dashboard IdP Test with a Discord guild member account.

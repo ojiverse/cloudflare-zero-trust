@@ -5,4 +5,4 @@ discord_oidc_client_id  = "cloudflare-access"
 
 # Keep this false until the discord-oidc client registration is deployed and
 # the client secret is available as discord_oidc_client_secret.
-enable_cloudflare_idp = false
+enable_discord_oidc_idp = false

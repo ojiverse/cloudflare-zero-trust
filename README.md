@@ -272,7 +272,7 @@ organization and requires no setup.
    CLOUDFLARE_TEAM_NAME        (ojiverse)
    DISCORD_OIDC_ISSUER_URL     (https://discord.id.ojiver.se)
    DISCORD_OIDC_CLIENT_ID      (cloudflare-access)
-   ENABLE_CLOUDFLARE_IDP       (false initially)
+   ENABLE_DISCORD_OIDC_IDP       (false initially)
    OP_WORKLOAD_ID
    OP_ENVIRONMENT_ID
    ```
@@ -288,7 +288,7 @@ organization and requires no setup.
    a GitHub environment, use `production`.
 8. Set `CD_ENABLED` to `true`. The first apply creates the Zero Trust
    organization with auth domain `ojiverse.cloudflareaccess.com`.
-9. Set `ENABLE_CLOUDFLARE_IDP` to `true` and re-run. The discord-oidc
+9. Set `ENABLE_DISCORD_OIDC_IDP` to `true` and re-run. The discord-oidc
    IdP is created.
 10. **Live verification** (cannot be covered by mocked tests): in the
     Zero Trust dashboard, run **Test** on the Discord provider; confirm

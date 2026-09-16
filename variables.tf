@@ -45,8 +45,8 @@ variable "discord_oidc_client_secret" {
   sensitive   = true
 }
 
-variable "enable_cloudflare_idp" {
-  description = "Create the Cloudflare identity provider only after the discord-oidc client registration is deployed."
+variable "enable_discord_oidc_idp" {
+  description = "Create the discord-oidc identity provider resource. Keep false until the discord-oidc client registration is deployed and its secret is available as discord_oidc_client_secret. Unrelated to the built-in Cloudflare IdP, which always exists."
   type        = bool
   default     = false
 }

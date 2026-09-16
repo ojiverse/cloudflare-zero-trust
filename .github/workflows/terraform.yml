@@ -48,7 +48,7 @@ jobs:
       TF_VAR_cloudflare_team_name: ${{ vars.CLOUDFLARE_TEAM_NAME }}
       TF_VAR_discord_oidc_issuer_url: ${{ vars.DISCORD_OIDC_ISSUER_URL }}
       TF_VAR_discord_oidc_client_id: ${{ vars.DISCORD_OIDC_CLIENT_ID }}
-      TF_VAR_enable_cloudflare_idp: ${{ vars.ENABLE_CLOUDFLARE_IDP }}
+      TF_VAR_enable_discord_oidc_idp: ${{ vars.ENABLE_DISCORD_OIDC_IDP }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
