@@ -8,7 +8,8 @@
   minus the GCP layer (no Google Workspace here — the IdP is the
   Discord-backed OIDC provider from `ojiverse/discord-oidc`).
 - `versions.tf`: cloudflare `~> 5.23`, S3 backend on R2 bucket
-  `ojiverse-terraform-state` (account `8df65b32589ad7acc6d3d257d5dd2d04`).
+  `ojiverse-tfstate-cloudflare-zero-trust-prod` (account
+  `8df65b32589ad7acc6d3d257d5dd2d04`).
   No `use_lockfile` — R2 lacks conditional writes; CI concurrency group
   serializes applies.
 - `main.tf`: `cloudflare_zero_trust_organization` (team `ojiverse`,
@@ -28,7 +29,8 @@
 
 ### Needed from user
 
-- R2: enable R2, create bucket `ojiverse-terraform-state`, create R2 API
+- R2: enable R2, create bucket `ojiverse-tfstate-cloudflare-zero-trust-prod`,
+  create R2 API
   token (Object R/W on that bucket) → into 1Password env.
 - Cloudflare API token: `Access: Organizations, Identity Providers, and
   Groups Write` on OJIverse → 1Password env.
@@ -115,19 +117,38 @@
   member succeeds / non-member denied) and the built-in Cloudflare IdP
   still working — needs a human Discord login.
 
+### 2026-09-16 follow-up — dashboard Test failure: forced scopes
+
+- Dashboard **Test** on the Discord IdP failed with `invalid_scope`
+  ("scope not allowed for client") at the Access callback.
+- Root cause (verified by direct CF API PUT): **Cloudflare's generic OIDC
+  connector force-expands `scopes` to `["openid","email","profile"]`**.
+  Terraform sends `["openid"]`; the API silently widens it — narrowing is
+  impossible. So every authorize request carries `email`/`profile`, which
+  discord-oidc's strict `requested ⊆ allowed_scopes` check rejected
+  (fail-closed, as designed — the conflict is permanent, not a bug).
+- Also live-confirmed: built-in Cloudflare IdP exists
+  (`type: "cloudflare"`, id `00665c0c-7e2b-428a-976a-78839f444409`,
+  `restrict_to_account_members: true`) — the break-glass path is intact.
+- Fix (user chose option A — global intersection, not a per-client
+  leniency flag): discord-oidc PR #13 `feat/lenient-scope-intersection`
+  grants `requested ∩ client.allowed_scopes`, keeps `openid` mandatory,
+  stores the granted scope in the transaction, and echoes only granted
+  scopes in the token response (RFC 6749 §3.3). Fail-closed handling of
+  `prompt`/`max_age` and PKCE S256 unchanged. Squash-merged; deploy run
+  35061999812 succeeded.
+- Live-verified after deploy: `authorize?...&scope=openid email profile`
+  now 302-redirects to Discord (previously `invalid_scope` callback).
+- Follow-up implication for this repo: `scopes = ["openid"]` in
+  `main.tf` will always drift — the API stores the triple. Plan output
+  will perpetually show a scopes diff unless the config is changed to
+  declare the full triple; left as-is deliberately (documents intent:
+  only `openid` is meaningful for this IdP).
+
 ### Still needed from user (cannot be automated here)
 
-- Cloudflare dashboard: R2 bucket `ojiverse-tfstate-cloudflare-zero-trust-prod`
-  was created by the user (decision: per-project bucket — R2 tokens are
-  bucket-scoped, no prefix permissions, and state holds plaintext secrets);
-  create bucket-scoped R2 API token + CF API token (Access: Organizations,
-  Identity Providers, and Groups Write on OJIverse).
-- 1Password: add `CLOUDFLARE_API_TOKEN`, `AWS_ACCESS_KEY_ID`,
-  `AWS_SECRET_ACCESS_KEY` to `ojiverse-cloudflare-zero-trust-prod`;
-  link its GitHub Actions destination to this repo's `terraform.yml`
-  on `main` → yields `OP_WORKLOAD_ID`/`OP_ENVIRONMENT_ID` (non-secret —
-  share them and they can be set as repo vars).
-- Approval gates: PR #10 merge (prod deploy), `CD_ENABLED=true` +
-  workflow dispatch (creates real ZT org), then
-  `ENABLE_DISCORD_OIDC_IDP=true` + re-dispatch.
-- Dashboard IdP Test with a Discord guild member account.
+- Dashboard IdP **Test** re-run with a Discord guild member account
+  (member succeeds / non-member denied; result's "email" field holds the
+  Discord snowflake via `email_claim_name = "sub"`), plus a sanity check
+  that the built-in Cloudflare IdP (one-time PIN) still works as the
+  admin/break-glass path.
