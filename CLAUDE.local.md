@@ -90,6 +90,21 @@
   `visibility: all`.
 - README updated to the new env name.
 
+### 2026-09-16 follow-up — bootstrap execution (continued)
+
+- discord-oidc PR #10 squash-merged; test green → `workflow_run` deploy
+  35059365556 succeeded. `cloudflare-access` confidential client is live;
+  discovery + JWKS verified at `discord.id.ojiver.se`.
+- Variable rename done: `enable_cloudflare_idp` → `enable_discord_oidc_idp`
+  (it gates the Discord IdP, not the built-in Cloudflare IdP). GitHub
+  environment variable renamed to match.
+- First apply attempt (run 35059747998) failed with
+  `access.api.error.not_enabled` — **Zero Trust must be activated on the
+  account via dashboard onboarding before Terraform can manage the org**.
+  Team name `ojiverse` must be chosen there (it is permanent). README
+  bootstrap table + sequence updated. Confirmed the 1Password secret
+  chain works: all four env vars loaded and masked in the run log.
+
 ### Still needed from user (cannot be automated here)
 
 - Cloudflare dashboard: R2 bucket `ojiverse-tfstate-cloudflare-zero-trust-prod`

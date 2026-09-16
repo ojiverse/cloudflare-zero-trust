@@ -226,6 +226,7 @@ once before Terraform can own the resource) or **intentionally manual**
 
 | Step | Class |
 |---|---|
+| Enable Zero Trust on the account (dashboard onboarding) — pick team name `ojiverse`; Terraform can only manage an org after the account is activated | bootstrap-only — one-time account activation |
 | Enable R2, create `ojiverse-tfstate-cloudflare-zero-trust-prod` bucket | bootstrap-only |
 | Create R2 API token (bucket-scoped Object R/W) | bootstrap-only |
 | Create Cloudflare API token (Access IdP/Orgs/Groups Write) | intentionally manual |
@@ -241,28 +242,33 @@ organization and requires no setup.
 
 ### Sequence
 
-1. Enable R2 on the OJIverse account and create the bucket:
+1. Enable Zero Trust on the OJIverse account: open the Zero Trust
+   dashboard once and complete onboarding. When asked for the team name,
+   enter **`ojiverse`** — it becomes `ojiverse.cloudflareaccess.com` and
+   cannot be changed later. Until this is done, any API call to
+   `/access/organizations` returns `access.api.error.not_enabled`.
+2. Enable R2 on the OJIverse account and create the bucket:
 
    ```console
    npx wrangler@4 r2 bucket create ojiverse-tfstate-cloudflare-zero-trust-prod
    ```
 
-2. Create an R2 API token (R2 → Manage API tokens) with Object Read &
+3. Create an R2 API token (R2 → Manage API tokens) with Object Read &
    Write on that bucket; store the access key pair in the 1Password
    Environment.
-3. Create the Cloudflare API token described above; store it in the
+4. Create the Cloudflare API token described above; store it in the
    1Password Environment.
-4. Generate the OIDC client secret (at least 16 characters) and store it
+5. Generate the OIDC client secret (at least 16 characters) and store it
    in both places:
    - `discord-oidc-prod` Environment → `OIDC_CLIENT_SECRETS_JSON` as
      `{"cloudflare-access": "<secret>"}`
    - `ojiverse-cloudflare-zero-trust-prod` Environment →
      `TF_VAR_discord_oidc_client_secret`
-5. Deploy discord-oidc with the `cloudflare-access` confidential client
+6. Deploy discord-oidc with the `cloudflare-access` confidential client
    registered (see ojiverse/discord-oidc PR #10; the secret must be in
    place before that deploy or the Worker's config validation fails
    closed).
-6. Create the GitHub `production` environment (optionally with required
+7. Create the GitHub `production` environment (optionally with required
    reviewers). Variables consumed by the `apply` job live at the
    **environment level** (matching the discord-oidc convention), so they
    are only exposed to jobs running in `production`:
@@ -286,8 +292,9 @@ organization and requires no setup.
    this repository's `Terraform` workflow on `main` (the destination
    form asks for the workflow *name*, not the file name); when it offers
    a GitHub environment, use `production`.
-8. Set `CD_ENABLED` to `true`. The first apply creates the Zero Trust
-   organization with auth domain `ojiverse.cloudflareaccess.com`.
+8. Set `CD_ENABLED` to `true`. The first apply manages the Zero Trust
+   organization created during onboarding (PUT upsert — it adopts the
+   existing org, including auth domain `ojiverse.cloudflareaccess.com`).
 9. Set `ENABLE_DISCORD_OIDC_IDP` to `true` and re-run. The discord-oidc
    IdP is created.
 10. **Live verification** (cannot be covered by mocked tests): in the
