@@ -145,6 +145,48 @@
   declare the full triple; left as-is deliberately (documents intent:
   only `openid` is meaningful for this IdP).
 
+### 2026-09-16 follow-up — token exchange failure: `+` in client secret
+
+- Re-run of the dashboard Test got past authorize (scope fix worked) but
+  failed at token exchange: "Failed to exchange code for token. Make
+  sure the client secret is correct." — `invalid_client`.
+- Diagnosis via live probing of `/token` (no creds needed for the
+  negative controls, real secret read once from the 1Password env mount):
+  - `client_secret_post` → `invalid_client` (unsupported by design —
+    only `client_secret_basic`/`none` exist).
+  - `client_secret_basic` + RFC 6749 §2.3.1 form-encoded secret → auth
+    passes (fails later on a deliberately-missing param).
+  - `client_secret_basic` + raw secret → `invalid_client`.
+- Root cause: the generated secret was `openssl rand -base64 32` and
+  contained `+`. discord-oidc's `decode_basic` applies form-decoding to
+  the credential parts (RFC 6749 §2.3.1-compliant), turning `+` into a
+  space → constant-time compare fails. Cloudflare sends the raw secret
+  in Basic (does not form-encode). Community evidence: CF uses
+  `client_secret_basic` (Nextcloud OIDC users hit the same "make sure
+  the client secret is correct" + "undefined" error because their app
+  only accepts body creds).
+- Fix applied (no code change): rotated the client secret to
+  `openssl rand -hex 32` (64 hex chars — no `+`/`/`/`=`/`%`, immune to
+  form-encoding ambiguity in both basic and post paths). Updated
+  `OIDC_CLIENT_SECRETS_JSON` in `discord-oidc-prod` AND
+  `TF_VAR_discord_oidc_client_secret` in `ojiverse-cloudflare-zero-trust-prod`;
+  discord-oidc deploy run 35063844649 synced the worker secret;
+  terraform apply run 35064265083 updated the IdP's stored secret
+  (1 changed in-place).
+- Live-verified after rotation: raw `client_secret_basic` with the new
+  secret passes client authentication; the old secret is rejected.
+- ⚠️ `append_variables` in the 1Password MCP **duplicates** rather than
+  updates existing variable names — both envs now have two same-name
+  entries (old + new). The load-secrets action populates both and the
+  last one wins (confirmed: worker + terraform both got the new value),
+  but the stale duplicates should be deleted manually in the 1Password
+  desktop app. For future value changes, prefer editing the existing
+  variable in the UI instead of `append_variables`.
+- Suggested discord-oidc hardening (not done): accept raw secrets in
+  `decode_basic` (compare before and after form-decoding), since many
+  real-world clients skip §2.3.1 encoding. URL-safe secrets make this
+  moot for now.
+
 ### Still needed from user (cannot be automated here)
 
 - Dashboard IdP **Test** re-run with a Discord guild member account
