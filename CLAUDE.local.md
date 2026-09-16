@@ -104,6 +104,16 @@
   Team name `ojiverse` must be chosen there (it is permanent). README
   bootstrap table + sequence updated. Confirmed the 1Password secret
   chain works: all four env vars loaded and masked in the run log.
+- After the user enabled Zero Trust (team name `ojiverse`):
+  - apply run 35060057556 — org adopted via PUT upsert
+    (`name=OJIverse`, `ojiverse.cloudflareaccess.com`). Live-verified:
+    the org resource's PUT works as adopt-and-manage.
+  - apply run 35060138857 — Discord IdP created
+    (id `9986cc50-9611-4839-a3e9-886316b8daf6`); reported `redirect_url`
+    matches the registered client URI exactly.
+- Remaining live check: dashboard **Test** on the Discord IdP (guild
+  member succeeds / non-member denied) and the built-in Cloudflare IdP
+  still working — needs a human Discord login.
 
 ### Still needed from user (cannot be automated here)
 
