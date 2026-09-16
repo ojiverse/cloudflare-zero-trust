@@ -187,10 +187,23 @@
   real-world clients skip §2.3.1 encoding. URL-safe secrets make this
   moot for now.
 
+### 2026-09-16 — dashboard Test PASSED (full E2E green)
+
+- Cloudflare dashboard **Test** on the Discord IdP completed end to end:
+  authorize (granted `openid`) → Discord OAuth → callback → token
+  exchange (`client_secret_basic` + hex secret) → id_token verified.
+- Result payload: `{"email": "256659591201423382", "oidc_fields": {}}` —
+  the "email" field is the Discord snowflake surfaced via
+  `email_claim_name = "sub"`, as designed (not an email address).
+- The full chain is now verified live: scope intersection, PKCE,
+  `client_secret_basic` with URL-safe secret, guild gating upstream.
+
 ### Still needed from user (cannot be automated here)
 
-- Dashboard IdP **Test** re-run with a Discord guild member account
-  (member succeeds / non-member denied; result's "email" field holds the
-  Discord snowflake via `email_claim_name = "sub"`), plus a sanity check
-  that the built-in Cloudflare IdP (one-time PIN) still works as the
-  admin/break-glass path.
+- Negative test: dashboard Test with a Discord account that is **not**
+  in the required guild → must be denied.
+- Break-glass check: built-in Cloudflare IdP (one-time PIN) still works.
+- 1Password cleanup: delete the stale duplicate entries of
+  `OIDC_CLIENT_SECRETS_JSON` (discord-oidc-prod) and
+  `TF_VAR_discord_oidc_client_secret` (ojiverse-cloudflare-zero-trust-prod)
+  left by `append_variables`.
