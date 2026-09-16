@@ -198,10 +198,10 @@ TF_VAR_discord_oidc_client_secret
 - `CLOUDFLARE_API_TOKEN` — account-owned token limited to
   `Access: Organizations, Identity Providers, and Groups Write` on the
   OJIverse account. That scope covers exactly what this root manages
-  today (organization + identity providers). If Access Applications,
-  Policies, or Groups are added later, extend the token with the
-  corresponding `Access: Apps and Policies` / Groups permissions at that
-  time — do not broaden it preemptively.
+  today (organization + identity providers) — and already includes
+  Access Groups for later use. If Access Applications or Policies are
+  added, extend the token with `Access: Apps and Policies` at that time
+  — do not broaden it preemptively.
 - `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` — an R2 API token scoped
   to Object Read & Write on the `ojiverse-tfstate-cloudflare-zero-trust-prod`
   bucket only.
