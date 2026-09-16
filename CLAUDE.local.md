@@ -92,7 +92,7 @@
 
 ### Still needed from user (cannot be automated here)
 
-- Cloudflare dashboard: R2 bucket `ojiverse-tfstate-cloudflare-zero-trust`
+- Cloudflare dashboard: R2 bucket `ojiverse-tfstate-cloudflare-zero-trust-prod`
   was created by the user (decision: per-project bucket — R2 tokens are
   bucket-scoped, no prefix permissions, and state holds plaintext secrets);
   create bucket-scoped R2 API token + CF API token (Access: Organizations,

@@ -155,7 +155,7 @@ application's decision.
 ## State backend
 
 Terraform state is stored in the dedicated R2 bucket
-`ojiverse-tfstate-cloudflare-zero-trust` through the S3 backend (full
+`ojiverse-tfstate-cloudflare-zero-trust-prod` through the S3 backend (full
 configuration committed in `versions.tf`). The bucket is per-project on
 purpose: R2 API tokens scope at bucket granularity (there are no key-prefix
 permissions), so a shared state bucket would let any project's CI credential
@@ -203,7 +203,7 @@ TF_VAR_discord_oidc_client_secret
   corresponding `Access: Apps and Policies` / Groups permissions at that
   time — do not broaden it preemptively.
 - `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` — an R2 API token scoped
-  to Object Read & Write on the `ojiverse-tfstate-cloudflare-zero-trust`
+  to Object Read & Write on the `ojiverse-tfstate-cloudflare-zero-trust-prod`
   bucket only.
 - `TF_VAR_discord_oidc_client_secret` — the confidential-client secret
   shared with discord-oidc. The provider schema marks
@@ -226,7 +226,7 @@ once before Terraform can own the resource) or **intentionally manual**
 
 | Step | Class |
 |---|---|
-| Enable R2, create `ojiverse-tfstate-cloudflare-zero-trust` bucket | bootstrap-only |
+| Enable R2, create `ojiverse-tfstate-cloudflare-zero-trust-prod` bucket | bootstrap-only |
 | Create R2 API token (bucket-scoped Object R/W) | bootstrap-only |
 | Create Cloudflare API token (Access IdP/Orgs/Groups Write) | intentionally manual |
 | 1Password Environment + GitHub Actions destination | intentionally manual |
@@ -244,7 +244,7 @@ organization and requires no setup.
 1. Enable R2 on the OJIverse account and create the bucket:
 
    ```console
-   npx wrangler@4 r2 bucket create ojiverse-tfstate-cloudflare-zero-trust
+   npx wrangler@4 r2 bucket create ojiverse-tfstate-cloudflare-zero-trust-prod
    ```
 
 2. Create an R2 API token (R2 → Manage API tokens) with Object Read &

@@ -18,7 +18,7 @@ terraform {
   # through the AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY environment
   # variables.
   backend "s3" {
-    bucket                      = "ojiverse-tfstate-cloudflare-zero-trust"
+    bucket                      = "ojiverse-tfstate-cloudflare-zero-trust-prod"
     key                         = "terraform.tfstate"
     region                      = "auto"
     endpoints                   = { s3 = "https://8df65b32589ad7acc6d3d257d5dd2d04.r2.cloudflarestorage.com" }
